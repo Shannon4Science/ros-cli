@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Config contains API keys — NEVER commit
+config.json
+*.key
+*.secret
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual env
+.venv/
+venv/
