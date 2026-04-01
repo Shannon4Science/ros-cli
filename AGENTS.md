@@ -7,7 +7,7 @@
 ## Setup
 
 ```bash
-pip install git+https://github.com/shangfukai/ros-cli.git
+pip install git+https://github.com/Shannon4Science/ros-cli.git
 ros config init   # Bind your API key interactively
 ```
 

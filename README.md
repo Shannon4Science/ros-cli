@@ -5,13 +5,13 @@ Command-line tool for the ros-api academic resource query service.
 ## Installation
 
 ```bash
-pip install git+https://github.com/shangfukai/ros-cli.git
+pip install git+https://github.com/Shannon4Science/ros-cli.git
 ```
 
 Or install from local source:
 
 ```bash
-git clone https://github.com/shangfukai/ros-cli.git
+git clone https://github.com/Shannon4Science/ros-cli.git
 cd ros-cli
 pip install -e .
 ```
