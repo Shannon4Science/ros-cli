@@ -9,6 +9,11 @@ from ros_api import __version__
 from ros_api import config as cfg
 from ros_api.client import RosApiClient, ApiError
 from ros_api.formatter import print_result
+from ros_api.skill_install import (
+    ALL_PLATFORMS,
+    detected_platforms,
+    install_one,
+)
 
 
 def _get_client() -> RosApiClient:
@@ -285,6 +290,56 @@ def content_batch_fetch(ids_json, ids_file, fields, output_fmt):
         identifiers=identifiers,
         projection=_parse_fields(fields),
     )
+
+
+# ── Skill install (AI agent templates) ──────────────────────
+
+def _click_confirm(msg: str) -> bool:
+    return click.confirm(click.style(msg, fg="yellow"), default=False)
+
+
+def _click_echo(msg: str) -> None:
+    click.echo(msg)
+
+
+@main.group()
+def skill():
+    """Manage ros skill for AI agents."""
+    pass
+
+
+@skill.command("install")
+@click.option(
+    "--platform",
+    "platform_opt",
+    type=click.Choice(["cursor", "codex", "claude", "all"]),
+    default=None,
+    help="Target platform (default: auto-detect; prompt if multiple).",
+)
+def skill_install(platform_opt):
+    """Install ros skill for AI agent platforms."""
+    if platform_opt == "all":
+        targets = list(ALL_PLATFORMS)
+    elif platform_opt is not None:
+        targets = [platform_opt]
+    else:
+        detected = detected_platforms()
+        if len(detected) == 1:
+            targets = detected
+        else:
+            click.echo(click.style("Multiple agent platforms detected:", fg="cyan"))
+            for p in detected:
+                click.echo(f"  - {p}")
+            click.echo("  - " + click.style("all", fg="bright_white") + " (install to Cursor, Codex, and Claude Code paths)")
+            choice = click.prompt(
+                "Install to which platform?",
+                type=click.Choice(detected + ["all"]),
+                default="all",
+            )
+            targets = list(ALL_PLATFORMS) if choice == "all" else [choice]
+
+    for p in targets:
+        install_one(p, confirm=_click_confirm, echo=_click_echo)
 
 
 if __name__ == "__main__":

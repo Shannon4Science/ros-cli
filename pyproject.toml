@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ros-cli"
-version = "0.1.0"
+version = "0.1.1"
 description = "CLI tool for ros-api academic resource query service"
 requires-python = ">=3.9"
 dependencies = [
@@ -18,3 +18,6 @@ ros = "ros_api.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["ros_api*"]
+
+[tool.setuptools.package-data]
+ros_api = ["skills/*.md"]

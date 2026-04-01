@@ -73,7 +73,31 @@ Use `--output` to control output format:
 
 ## Agent Skill Integration
 
-This CLI is designed to be used as a skill by AI coding agents (Cursor, Codex, Claude Code). See:
+This CLI is designed to be used as a skill by AI coding agents (Cursor, Codex, Claude Code).
 
-- `AGENTS.md` — Claude Code integration
-- Install skills to `~/.cursor/skills/ros-api/` or `~/.codex/skills/ros-api/` using `python scripts/install_skills.py`
+### Install skill templates
+
+```bash
+ros skill install                     # Auto-detect platform
+ros skill install --platform cursor   # Cursor only
+ros skill install --platform codex    # Codex only
+ros skill install --platform claude   # Claude Code only
+ros skill install --platform all      # All platforms
+```
+
+Supported platforms and target paths:
+
+| Platform | Target path |
+|----------|-------------|
+| Cursor | `~/.cursor/skills/ros-api/SKILL.md` |
+| Codex | `~/.codex/skills/ros-api/SKILL.md` |
+| Claude Code | `./AGENTS.md` (current directory) |
+
+> **Legacy**: `python scripts/install_skills.py` is still available as a compatibility wrapper but calls the same shared module.
+
+### Bundled templates
+
+- `ros_api/skills/cursor_skill.md` — Cursor SKILL.md
+- `ros_api/skills/codex_skill.md` — Codex SKILL.md
+- `ros_api/skills/claude_agents.md` — Claude Code AGENTS.md
+- `AGENTS.md` — Claude Code integration (repo root copy)
