@@ -3,6 +3,8 @@
 Stores config at ~/.ros/config.json with api_key and base_url.
 """
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
 

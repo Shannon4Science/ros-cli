@@ -1,5 +1,7 @@
 """ros CLI entry point."""
 
+from __future__ import annotations
+
 import json
 import sys
 
