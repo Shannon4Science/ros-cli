@@ -1,148 +1,93 @@
-# ros — Academic Resource Query CLI
+# ROS API CLI
+
+Use the `ros` command-line tool as the source of truth for every lookup.
 
 ## Hard Rules
 
-1. Follow the **Onboarding** section step-by-step before any query.
-2. Never fabricate API responses — always run the actual command.
-3. When summarizing for user, use `--output compact` or `--output table`; use `--output json` when raw data is needed.
+1. Run the real `ros` CLI. Do not fabricate results.
+2. Run the onboarding checks before the first query in a session, or whenever the CLI or config may have changed.
+3. Prefer `--output compact` or `--output table` for user-facing summaries. Use `--output json` only when the raw payload is needed.
+4. Keep API keys out of chat when possible.
+5. Treat returned DOI, ISBN, and SHA256 values as authoritative identifiers.
 
-## Onboarding (run these checks in order)
+## Onboarding
 
-### Step 1: Check if CLI is installed
+1. Check whether the CLI is installed:
 
-```bash
-ros --version
-```
+   ```bash
+   ros --version
+   ```
 
-If the command is not found, install it:
+   If the command is missing, install it:
 
-```bash
-pip install git+https://github.com/Shannon4Science/ros-cli.git
-```
+   ```bash
+   pip install git+https://github.com/Shannon4Science/ros-cli.git
+   ```
 
-After install, run `ros --version` again to confirm.
+2. Check configuration:
 
-### Step 2: Check if API key is configured
+   ```bash
+   ros config show
+   ```
 
-```bash
-ros config show
-```
+   If the API key is missing, direct the user to:
+   `https://docs.ros.shlab.tech:18443/concepts/authentication/#get-api-key`
 
-If API Key shows `(not set)`, tell the user:
+   Then configure the CLI with either:
 
-> You need an API key for the ros academic resource service.
-> Please visit https://docs.ros.shlab.tech:18443/concepts/authentication/#get-api-key to obtain one.
+   ```bash
+   ros config set-key YOUR_API_KEY
+   ros config init
+   ```
 
-Then help them bind it:
+   Use `ros config set-url URL` only when the user needs a non-default base URL.
 
-```bash
-ros config set-key YOUR_API_KEY
-```
+3. Verify connectivity:
 
-Or use interactive setup: `ros config init`
+   ```bash
+   ros metadata query --search "title:test" --page-size 1 --output compact
+   ```
 
-### Step 3: Verify connectivity
+## Standard Workflows
 
-Run a quick test query:
-
-```bash
-ros metadata query --search "title:test" --page-size 1 --output compact
-```
-
-If this returns a result, setup is complete. Tell the user:
-
-> ros CLI is ready! You can now:
-> - **Search papers** by title, abstract, or keywords
-> - **Fetch paper details** by DOI or ISBN
-> - **Find full-text content** (PDF text) by SHA256
-> - **Batch fetch** multiple papers at once
-> - **Filter** by language, year, open access status, etc.
->
-> Just tell me what you'd like to search for!
-
----
-
-## Command Reference
-
-### Search papers (metadata query)
+Search metadata:
 
 ```bash
 ros metadata query --search "title:machine learning" --output compact
 ros metadata query --search "abstract:reinforcement learning" --fields "title,author,doi,publication_published_year" --page-size 10 --sort "publication_published_year:desc" --output table
 ```
 
-Add filters:
+Fetch one metadata record:
 
 ```bash
-ros metadata query --search "title:transformer" --filter '{"type":"and","conditions":[{"field":"language","value":"en"},{"field":"publication_published_year","operator":"$gte","value":2020}]}' --output compact
-```
-
-### Fetch single paper
-
-```bash
-ros metadata fetch --doi "10.1234/example" --fields "title,author,abstract,doi"
+ros metadata fetch --doi "10.1590/1806-9126-rbef-2022-0101" --fields "title,author,abstract,doi"
 ros metadata fetch --isbn "9780262046824"
 ```
 
-### Batch fetch papers
+Batch fetch metadata:
 
 ```bash
-ros metadata batch-fetch --ids '[{"field":"doi","value":"10.1234/a"},{"field":"isbn13","value":"9780262046824"}]' --fields "title,author,doi"
+ros metadata batch-fetch --ids "[{\"field\":\"doi\",\"value\":\"10.1234/a\"},{\"field\":\"isbn13\",\"value\":\"9780262046824\"}]" --fields "title,author,doi"
 ros metadata batch-fetch --ids-file identifiers.json
 ```
 
-### Search content (file-level)
+Search content:
 
 ```bash
 ros content query --search "title:deep learning" --fields "sha256,title,file_format,content_url" --output table
 ```
 
-### Fetch content by SHA256
+Fetch content by SHA256:
 
 ```bash
 ros content fetch --sha256 "dee1a64db5c1117b044f945abdd371179119e63f22dc8854bbf2b0427649a204" --fields "sha256,title,content_url"
 ```
 
----
+## Full-Text Retrieval Pattern
 
-## Query Construction Guide
+When the user starts from a paper title, DOI, or ISBN and needs the full extracted text:
 
-### Search fields
-
-| Resource | `--search` fields |
-|----------|------------------|
-| Metadata | `title`, `abstract`, `publication_venue_name`, `keywords` |
-| Content  | `title`, `abstract`, `keyword`, `magazine` |
-
-### Filter operators
-
-`--filter` accepts JSON. Operators: `$eq` (default), `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$between`, `$contains`.
-
-Logical combinators: `and`, `or`, `not` via `{"type":"and","conditions":[...]}`.
-
-### Key filterable fields
-
-| Resource | Fields |
-|----------|--------|
-| Metadata | `language`, `doi`, `isbn13`, `author`, `publication_published_year`, `publication_venue_name`, `access_is_oa`, `keywords`, `metadata_type` |
-| Content  | `sha256`, `file_format`, `language`, `doi`, `isbn`, `content_length` |
-
-### Sort
-
-Only metadata: `--sort "publication_published_year:desc"` or `publication_published_year:asc`.
-
-### Identifiers
-
-| Resource | Fields |
-|----------|--------|
-| Metadata | `doi` (papers), `isbn13` (ebooks) |
-| Content  | `sha256` |
-
-### Metadata-to-Content linking
-
-Metadata field `access_xinghe_repository_sha256` contains a list of SHA256 hashes. Each maps to a Content record. Workflow:
-
-1. `ros metadata query --search "title:XXX" --fields "title,doi,access_xinghe_repository_sha256"`
-2. Pick sha256 from result
-3. `ros content fetch --sha256 <hash> --fields "sha256,title,content_url"`
-4. `content_url` is a pre-signed link to the extracted full text (time-limited)
+1. Query or fetch metadata and request `access_xinghe_repository_sha256`.
+2. Select the relevant SHA256 hash from that field.
+3. Fetch the content record with `ros content fetch --sha256 ...`.
+4. Use the returned `content_url` as the time-limited link to the extracted text.

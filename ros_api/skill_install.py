@@ -5,22 +5,24 @@ Used by both ``ros skill install`` (CLI) and ``scripts/install_skills.py``.
 
 from __future__ import annotations
 
-import sys
 from importlib.resources import files
 from pathlib import Path
+import shutil
 from typing import Callable
 
-ALL_PLATFORMS = ("cursor", "codex", "claude")
+ALL_PLATFORMS = ("cursor", "codex", "openclaw", "claude")
 
 TEMPLATE_MAP = {
     "cursor": "cursor_skill.md",
     "codex": "codex_skill.md",
+    "openclaw": "openclaw_skill.md",
     "claude": "claude_agents.md",
 }
 
 DEST_FILENAME = {
     "cursor": "SKILL.md",
     "codex": "SKILL.md",
+    "openclaw": "SKILL.md",
     "claude": "AGENTS.md",
 }
 
@@ -33,6 +35,8 @@ def detected_platforms() -> list[str]:
         out.append("cursor")
     if (home / ".codex" / "skills").is_dir():
         out.append("codex")
+    if (home / ".openclaw").is_dir() or shutil.which("openclaw"):
+        out.append("openclaw")
     out.append("claude")
     return out
 
@@ -49,6 +53,8 @@ def dest_path(platform: str, cwd: Path | None = None) -> Path:
         return home / ".cursor" / "skills" / "ros-api" / "SKILL.md"
     if platform == "codex":
         return home / ".codex" / "skills" / "ros-api" / "SKILL.md"
+    if platform == "openclaw":
+        return home / ".openclaw" / "skills" / "ros-api" / "SKILL.md"
     if platform == "claude":
         return (cwd or Path.cwd()) / "AGENTS.md"
     raise ValueError(f"Unknown platform: {platform}")
@@ -62,27 +68,7 @@ def install_one(
     confirm: Callable[[str], bool] | None = None,
     echo: Callable[[str], None] | None = None,
 ) -> bool:
-    """Install skill template for a single *platform*.
-
-    Parameters
-    ----------
-    platform:
-        One of ``"cursor"``, ``"codex"``, ``"claude"``.
-    cwd:
-        Working directory for Claude's ``AGENTS.md`` (defaults to ``Path.cwd()``).
-    overwrite_ok:
-        If *True*, overwrite existing files without prompting.
-    confirm:
-        Optional callback ``(message) -> bool`` to ask user before overwriting.
-        When *None*, existing files are silently skipped unless *overwrite_ok*.
-    echo:
-        Optional callback ``(message) -> None`` for output.  Falls back to *print*.
-
-    Returns
-    -------
-    bool
-        *True* if the file was written, *False* if skipped.
-    """
+    """Install skill template for a single *platform*."""
     echo = echo or print
     template_name = TEMPLATE_MAP.get(platform)
     if template_name is None:
@@ -118,5 +104,11 @@ def install(
     """Install skill templates for the given *platforms* (or auto-detect)."""
     if platforms is None:
         platforms = list(ALL_PLATFORMS)
-    for p in platforms:
-        install_one(p, cwd=cwd, overwrite_ok=overwrite_ok, confirm=confirm, echo=echo)
+    for platform in platforms:
+        install_one(
+            platform,
+            cwd=cwd,
+            overwrite_ok=overwrite_ok,
+            confirm=confirm,
+            echo=echo,
+        )

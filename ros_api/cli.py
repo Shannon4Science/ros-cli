@@ -9,13 +9,9 @@ import click
 
 from ros_api import __version__
 from ros_api import config as cfg
-from ros_api.client import RosApiClient, ApiError
+from ros_api.client import ApiError, RosApiClient
 from ros_api.formatter import print_result
-from ros_api.skill_install import (
-    ALL_PLATFORMS,
-    detected_platforms,
-    install_one,
-)
+from ros_api.skill_install import ALL_PLATFORMS, detected_platforms, install_one
 
 
 def _get_client() -> RosApiClient:
@@ -31,18 +27,22 @@ def _get_client() -> RosApiClient:
 
 
 def _parse_search(search_str: str | None) -> dict | None:
-    """Parse 'field:value' into search object."""
+    """Parse 'field:value' into a search object."""
     if not search_str:
         return None
     parts = search_str.split(":", 1)
     if len(parts) != 2:
-        click.echo("Error: --search format must be 'field:value' (e.g. title:machine learning)", err=True)
+        click.echo(
+            "Error: --search format must be 'field:value' "
+            "(e.g. title:machine learning)",
+            err=True,
+        )
         sys.exit(1)
     return {"field": parts[0], "operator": "$match", "value": parts[1]}
 
 
 def _parse_sort(sort_str: str | None) -> list | None:
-    """Parse 'field:asc' or 'field:desc' into sort array."""
+    """Parse 'field:asc' or 'field:desc' into a sort array."""
     if not sort_str:
         return None
     parts = sort_str.split(":", 1)
@@ -57,7 +57,7 @@ def _parse_sort(sort_str: str | None) -> list | None:
 def _parse_fields(fields_str: str | None) -> dict | None:
     if not fields_str:
         return None
-    return {"fields": [f.strip() for f in fields_str.split(",") if f.strip()]}
+    return {"fields": [field.strip() for field in fields_str.split(",") if field.strip()]}
 
 
 def _parse_json_arg(value: str | None, arg_name: str) -> dict | list | None:
@@ -65,35 +65,31 @@ def _parse_json_arg(value: str | None, arg_name: str) -> dict | list | None:
         return None
     try:
         return json.loads(value)
-    except json.JSONDecodeError as e:
-        click.echo(f"Error: invalid JSON for --{arg_name}: {e}", err=True)
+    except json.JSONDecodeError as exc:
+        click.echo(f"Error: invalid JSON for --{arg_name}: {exc}", err=True)
         sys.exit(1)
 
 
 def _run_api(fn, output_format: str, **kwargs):
     """Call an API function, handle errors, and print."""
     try:
-        result = fn(**{k: v for k, v in kwargs.items() if v is not None})
+        result = fn(**{key: value for key, value in kwargs.items() if value is not None})
         print_result(result, output_format)
-    except ApiError as e:
-        click.echo(f"API Error [{e.status_code}]: {e.message}", err=True)
-        if e.details:
-            click.echo(f"Details: {json.dumps(e.details, ensure_ascii=False)}", err=True)
+    except ApiError as exc:
+        click.echo(f"API Error [{exc.status_code}]: {exc.message}", err=True)
+        if exc.details:
+            click.echo(f"Details: {json.dumps(exc.details, ensure_ascii=False)}", err=True)
         sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error: {e}", err=True)
+    except Exception as exc:
+        click.echo(f"Error: {exc}", err=True)
         sys.exit(1)
 
-
-# ── Main group ──────────────────────────────────────────────
 
 @click.group()
 @click.version_option(__version__, prog_name="ros")
 def main():
     """ros CLI - Academic resource query tool."""
 
-
-# ── Config commands ─────────────────────────────────────────
 
 @main.group()
 def config():
@@ -107,9 +103,7 @@ def config_init():
 
     current_url = cfg.get_base_url()
     click.echo(f"Current Base URL: {current_url}")
-    new_url = click.prompt(
-        "Base URL", default=current_url, show_default=True
-    )
+    new_url = click.prompt("Base URL", default=current_url, show_default=True)
     cfg.set_base_url(new_url)
 
     current_key = cfg.get_api_key()
@@ -126,8 +120,8 @@ def config_init():
             pagination={"page": 1, "page_size": 1},
         )
         click.echo("Connection verified successfully!")
-    except Exception as e:
-        click.echo(f"Warning: verification failed ({e}). Config saved anyway.", err=True)
+    except Exception as exc:
+        click.echo(f"Warning: verification failed ({exc}). Config saved anyway.", err=True)
 
     click.echo(f"\nConfig saved to {cfg.CONFIG_FILE}")
 
@@ -156,8 +150,6 @@ def config_set_url(url):
     cfg.set_base_url(url)
     click.echo(f"Base URL set: {url}")
 
-
-# ── Metadata commands ───────────────────────────────────────
 
 @main.group()
 def metadata():
@@ -207,7 +199,7 @@ def metadata_fetch(doi, isbn, fields, output_fmt):
 
 
 @metadata.command("batch-fetch")
-@click.option("--ids", "ids_json", help="Identifiers as JSON array: [{\"field\":\"doi\",\"value\":\"...\"},...]")
+@click.option("--ids", "ids_json", help='Identifiers as JSON array: [{"field":"doi","value":"..."},...]')
 @click.option("--ids-file", type=click.Path(exists=True), help="Read identifiers from JSON file")
 @click.option("--fields", help="Comma-separated projection fields")
 @click.option("--output", "output_fmt", type=click.Choice(["json", "table", "compact"]), default="json")
@@ -228,8 +220,6 @@ def metadata_batch_fetch(ids_json, ids_file, fields, output_fmt):
         projection=_parse_fields(fields),
     )
 
-
-# ── Content commands ────────────────────────────────────────
 
 @main.group()
 def content():
@@ -272,7 +262,7 @@ def content_fetch(sha256, fields, output_fmt):
 
 
 @content.command("batch-fetch")
-@click.option("--ids", "ids_json", help="Identifiers as JSON array: [{\"field\":\"sha256\",\"value\":\"...\"},...]")
+@click.option("--ids", "ids_json", help='Identifiers as JSON array: [{"field":"sha256","value":"..."},...]')
 @click.option("--ids-file", type=click.Path(exists=True), help="Read identifiers from JSON file")
 @click.option("--fields", help="Comma-separated projection fields")
 @click.option("--output", "output_fmt", type=click.Choice(["json", "table", "compact"]), default="json")
@@ -294,27 +284,24 @@ def content_batch_fetch(ids_json, ids_file, fields, output_fmt):
     )
 
 
-# ── Skill install (AI agent templates) ──────────────────────
-
-def _click_confirm(msg: str) -> bool:
-    return click.confirm(click.style(msg, fg="yellow"), default=False)
+def _click_confirm(message: str) -> bool:
+    return click.confirm(click.style(message, fg="yellow"), default=False)
 
 
-def _click_echo(msg: str) -> None:
-    click.echo(msg)
+def _click_echo(message: str) -> None:
+    click.echo(message)
 
 
 @main.group()
 def skill():
     """Manage ros skill for AI agents."""
-    pass
 
 
 @skill.command("install")
 @click.option(
     "--platform",
     "platform_opt",
-    type=click.Choice(["cursor", "codex", "claude", "all"]),
+    type=click.Choice(["cursor", "codex", "openclaw", "claude", "all"]),
     default=None,
     help="Target platform (default: auto-detect; prompt if multiple).",
 )
@@ -330,9 +317,13 @@ def skill_install(platform_opt):
             targets = detected
         else:
             click.echo(click.style("Multiple agent platforms detected:", fg="cyan"))
-            for p in detected:
-                click.echo(f"  - {p}")
-            click.echo("  - " + click.style("all", fg="bright_white") + " (install to Cursor, Codex, and Claude Code paths)")
+            for platform in detected:
+                click.echo(f"  - {platform}")
+            click.echo(
+                "  - "
+                + click.style("all", fg="bright_white")
+                + " (install to Cursor, Codex, OpenClaw, and Claude Code paths)"
+            )
             choice = click.prompt(
                 "Install to which platform?",
                 type=click.Choice(detected + ["all"]),
@@ -340,8 +331,8 @@ def skill_install(platform_opt):
             )
             targets = list(ALL_PLATFORMS) if choice == "all" else [choice]
 
-    for p in targets:
-        install_one(p, confirm=_click_confirm, echo=_click_echo)
+    for platform in targets:
+        install_one(platform, confirm=_click_confirm, echo=_click_echo)
 
 
 if __name__ == "__main__":

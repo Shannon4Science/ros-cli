@@ -1,46 +1,40 @@
 #!/usr/bin/env python3
-"""Zero-dependency skill installer — works without pip-installing ros-cli.
-
-Usage (one-liner):
-    curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/scripts/quick_install.py | python3
-    curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/scripts/quick_install.py | python3 - --platform cursor
-
-Windows PowerShell:
-    irm https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/scripts/quick_install.py | python
-
-With arguments:
-    python quick_install.py                     # auto-detect
-    python quick_install.py --platform cursor   # Cursor only
-    python quick_install.py --platform codex    # Codex only
-    python quick_install.py --platform claude   # Claude Code only
-    python quick_install.py --platform all      # all platforms
-"""
+"""Zero-dependency skill installer that works without pip-installing ros-cli."""
 
 from __future__ import annotations
 
 import argparse
-import os
-import sys
 from pathlib import Path
-from urllib.request import urlopen
+import shutil
+import sys
 from urllib.error import URLError
+from urllib.request import urlopen
 
 REPO = "Shannon4Science/ros-cli"
 BRANCH = "main"
 BASE_RAW = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
+LOCAL_ROOT = Path(__file__).resolve().parents[1]
 
 TEMPLATES = {
     "cursor": {
         "url": f"{BASE_RAW}/ros_api/skills/cursor_skill.md",
         "dest": Path.home() / ".cursor" / "skills" / "ros-api" / "SKILL.md",
+        "path": LOCAL_ROOT / "ros_api" / "skills" / "cursor_skill.md",
     },
     "codex": {
         "url": f"{BASE_RAW}/ros_api/skills/codex_skill.md",
         "dest": Path.home() / ".codex" / "skills" / "ros-api" / "SKILL.md",
+        "path": LOCAL_ROOT / "ros_api" / "skills" / "codex_skill.md",
+    },
+    "openclaw": {
+        "url": f"{BASE_RAW}/ros_api/skills/openclaw_skill.md",
+        "dest": Path.home() / ".openclaw" / "skills" / "ros-api" / "SKILL.md",
+        "path": LOCAL_ROOT / "ros_api" / "skills" / "openclaw_skill.md",
     },
     "claude": {
         "url": f"{BASE_RAW}/ros_api/skills/claude_agents.md",
         "dest": Path.cwd() / "AGENTS.md",
+        "path": LOCAL_ROOT / "ros_api" / "skills" / "claude_agents.md",
     },
 }
 
@@ -54,16 +48,18 @@ def _detect() -> list[str]:
         out.append("cursor")
     if (home / ".codex" / "skills").is_dir():
         out.append("codex")
+    if (home / ".openclaw").is_dir() or shutil.which("openclaw"):
+        out.append("openclaw")
     out.append("claude")
     return out
 
 
 def _download(url: str) -> str:
     try:
-        with urlopen(url, timeout=30) as resp:
-            return resp.read().decode("utf-8")
-    except URLError as e:
-        print(f"  [error] Failed to download {url}: {e}", file=sys.stderr)
+        with urlopen(url, timeout=30) as response:
+            return response.read().decode("utf-8")
+    except URLError as exc:
+        print(f"  [error] Failed to download {url}: {exc}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -72,13 +68,18 @@ def _install(platform: str, *, force: bool = False) -> None:
     dest: Path = info["dest"]
 
     if dest.exists() and not force:
-        ans = input(f"  File exists: {dest}\n  Overwrite? [y/N] ").strip().lower()
-        if ans not in ("y", "yes"):
+        answer = input(f"  File exists: {dest}\n  Overwrite? [y/N] ").strip().lower()
+        if answer not in ("y", "yes"):
             print(f"  Skipped ({platform})")
             return
 
-    print(f"  Downloading {platform} template...")
-    content = _download(info["url"])
+    local_template = info["path"]
+    if local_template.exists():
+        print(f"  Using local {platform} template...")
+        content = local_template.read_text(encoding="utf-8")
+    else:
+        print(f"  Downloading {platform} template...")
+        content = _download(info["url"])
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(content, encoding="utf-8", newline="\n")
     print(f"  Installed ({platform}): {dest}")
@@ -95,7 +96,8 @@ def main() -> None:
         help="Target platform (default: auto-detect).",
     )
     parser.add_argument(
-        "--force", "-f",
+        "--force",
+        "-f",
         action="store_true",
         help="Overwrite existing files without prompting.",
     )
@@ -111,8 +113,8 @@ def main() -> None:
         targets = _detect()
         print(f"  Auto-detected platforms: {', '.join(targets)}\n")
 
-    for p in targets:
-        _install(p, force=args.force)
+    for platform in targets:
+        _install(platform, force=args.force)
 
     print("\nDone! To also install the full CLI:")
     print("  pip install git+https://github.com/Shannon4Science/ros-cli.git")

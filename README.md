@@ -73,11 +73,11 @@ Use `--output` to control output format:
 
 ## Agent Skill Integration
 
-This CLI is designed to be used as a skill by AI coding agents (Cursor, Codex, Claude Code).
+This CLI is designed to be used as a skill by AI coding agents: Cursor, Codex, OpenClaw, and Claude Code.
 
 ### Method 1: Quick Install (no pip required)
 
-The fastest way — download and run a standalone script, no pre-installation needed:
+The fastest way is to download and run a standalone script, with no pre-installation needed:
 
 ```bash
 # Linux / macOS
@@ -87,18 +87,19 @@ curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/scripts
 irm https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/scripts/quick_install.py -OutFile qi.py; python qi.py; del qi.py
 
 # Specify platform
-curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/scripts/quick_install.py | python3 - --platform cursor
+curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/scripts/quick_install.py | python3 - --platform openclaw
 ```
 
 ### Method 2: CLI command (recommended if CLI is installed)
 
 ```bash
 pip install git+https://github.com/Shannon4Science/ros-cli.git
-ros skill install                     # Auto-detect platform
-ros skill install --platform cursor   # Cursor only
-ros skill install --platform codex    # Codex only
-ros skill install --platform claude   # Claude Code only
-ros skill install --platform all      # All platforms
+ros skill install                      # Auto-detect platform
+ros skill install --platform cursor    # Cursor only
+ros skill install --platform codex     # Codex only
+ros skill install --platform openclaw  # OpenClaw only
+ros skill install --platform claude    # Claude Code only
+ros skill install --platform all       # All platforms
 ```
 
 ### Method 3: Manual download
@@ -116,6 +117,11 @@ mkdir -p ~/.codex/skills/ros-api
 curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/ros_api/skills/codex_skill.md \
   -o ~/.codex/skills/ros-api/SKILL.md
 
+# OpenClaw
+mkdir -p ~/.openclaw/skills/ros-api
+curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/ros_api/skills/openclaw_skill.md \
+  -o ~/.openclaw/skills/ros-api/SKILL.md
+
 # Claude Code (save to project root)
 curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/ros_api/skills/claude_agents.md \
   -o AGENTS.md
@@ -127,11 +133,15 @@ curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/ros_api
 |----------|-------------|
 | Cursor | `~/.cursor/skills/ros-api/SKILL.md` |
 | Codex | `~/.codex/skills/ros-api/SKILL.md` |
+| OpenClaw | `~/.openclaw/skills/ros-api/SKILL.md` |
 | Claude Code | `./AGENTS.md` (current directory) |
 
 ### Bundled templates
 
-- `ros_api/skills/cursor_skill.md` — Cursor SKILL.md
-- `ros_api/skills/codex_skill.md` — Codex SKILL.md
-- `ros_api/skills/claude_agents.md` — Claude Code AGENTS.md
-- `AGENTS.md` — Claude Code integration (repo root copy)
+- `ros_api/skills/cursor_skill.md` - Cursor SKILL.md
+- `ros_api/skills/codex_skill.md` - Codex SKILL.md
+- `ros_api/skills/openclaw_skill.md` - OpenClaw SKILL.md
+- `ros_api/skills/claude_agents.md` - Claude Code AGENTS.md
+- `AGENTS.md` - Claude Code integration (repo root copy)
+
+For maintainers: edit `ros_api/skills/shared_skill_body.md` and regenerate the bundled templates with `python scripts/render_skill_templates.py`.

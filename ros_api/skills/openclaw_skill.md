@@ -1,3 +1,16 @@
+---
+name: ros-api
+description: Query academic resources through the ros CLI. Use when the user asks to search papers or ebooks, fetch metadata by DOI or ISBN, query extracted content by SHA256, batch fetch records, inspect scholarly resources in the ROS service, or install and configure the ros CLI.
+metadata:
+  openclaw:
+    homepage: https://github.com/Shannon4Science/ros-cli
+    requires:
+      anyBins:
+        - ros
+        - python
+        - python.exe
+---
+
 # ROS API CLI
 
 Use the `ros` command-line tool as the source of truth for every lookup.
