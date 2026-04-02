@@ -11,13 +11,13 @@ BODY_PATH = SKILLS_DIR / "shared_skill_body.md"
 
 STANDARD_FRONTMATTER = """---
 name: ros-api
-description: Query academic resources through the ros CLI. Use when the user asks to search papers or ebooks, fetch metadata by DOI or ISBN, query extracted content by SHA256, batch fetch records, inspect scholarly resources in the ROS service, or install and configure the ros CLI.
+description: Query academic resources through the ros CLI. Requires the ros CLI to be installed locally first. Use when the user asks to search papers or ebooks, fetch metadata by DOI or ISBN, query extracted content by SHA256, batch fetch records, inspect scholarly resources in the ROS service, or install and configure the ros CLI.
 ---
 """
 
 OPENCLAW_FRONTMATTER = """---
 name: ros-api
-description: Query academic resources through the ros CLI. Use when the user asks to search papers or ebooks, fetch metadata by DOI or ISBN, query extracted content by SHA256, batch fetch records, inspect scholarly resources in the ROS service, or install and configure the ros CLI.
+description: Query academic resources through the ros CLI. Requires the ros CLI to be installed locally first. Use when the user asks to search papers or ebooks, fetch metadata by DOI or ISBN, query extracted content by SHA256, batch fetch records, inspect scholarly resources in the ROS service, or install and configure the ros CLI.
 metadata:
   openclaw:
     homepage: https://github.com/Shannon4Science/ros-cli

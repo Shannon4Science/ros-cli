@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Zero-dependency skill installer that works without pip-installing ros-cli."""
+"""Zero-dependency installer for ros skill templates only.
+
+This script does not install the ros CLI itself.
+"""
 
 from __future__ import annotations
 
@@ -87,7 +90,7 @@ def _install(platform: str, *, force: bool = False) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Install ros skill templates for AI coding agents (no pip install needed)."
+        description="Install ros skill templates for AI coding agents. This does not install the ros CLI."
     )
     parser.add_argument(
         "--platform",
@@ -116,8 +119,9 @@ def main() -> None:
     for platform in targets:
         _install(platform, force=args.force)
 
-    print("\nDone! To also install the full CLI:")
-    print("  pip install git+https://github.com/Shannon4Science/ros-cli.git")
+    print("\nSkill templates installed.")
+    print("Before using the skill, install and configure the CLI:")
+    print("  pip install --upgrade git+https://github.com/Shannon4Science/ros-cli.git")
     print("  ros config init")
 
 

@@ -1,28 +1,26 @@
 # ROS API CLI
 
-Use the `ros` command-line tool as the source of truth for every lookup.
+Use the `ros` command-line tool as the source of truth for every lookup. This skill requires the CLI to be installed locally before use.
 
 ## Hard Rules
 
-1. Run the real `ros` CLI. Do not fabricate results.
-2. Run the onboarding checks before the first query in a session, or whenever the CLI or config may have changed.
-3. Prefer `--output compact` or `--output table` for user-facing summaries. Use `--output json` only when the raw payload is needed.
-4. Keep API keys out of chat when possible.
-5. Treat returned DOI, ISBN, and SHA256 values as authoritative identifiers.
+1. Install `ros-cli` before using this skill. If the `ros` command is unavailable, stop and install it before any lookup.
+2. Run the real `ros` CLI. Do not fabricate results.
+3. Run the onboarding checks after installation and before the first query in a session, or whenever the CLI or config may have changed.
+4. Prefer `--output compact` or `--output table` for user-facing summaries. Use `--output json` only when the raw payload is needed.
+5. Keep API keys out of chat when possible.
+6. Treat returned DOI, ISBN, and SHA256 values as authoritative identifiers.
 
 ## Onboarding
 
-1. Check whether the CLI is installed:
+1. Install or upgrade the CLI, then verify it is available:
 
    ```bash
+   pip install --upgrade git+https://github.com/Shannon4Science/ros-cli.git
    ros --version
    ```
 
-   If the command is missing, install it:
-
-   ```bash
-   pip install git+https://github.com/Shannon4Science/ros-cli.git
-   ```
+   If installation is blocked in the current environment, tell the user the skill cannot be used until `ros` is installed.
 
 2. Check configuration:
 

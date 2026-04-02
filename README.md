@@ -75,9 +75,32 @@ Use `--output` to control output format:
 
 This CLI is designed to be used as a skill by AI coding agents: Cursor, Codex, OpenClaw, and Claude Code.
 
-### Method 1: Quick Install (no pip required)
+The bundled skill templates require the `ros` CLI to be installed locally before the skill is actually usable. Installing a skill file only adds agent instructions; it does not make lookups work by itself.
 
-The fastest way is to download and run a standalone script, with no pre-installation needed:
+Required before first use:
+
+```bash
+pip install --upgrade git+https://github.com/Shannon4Science/ros-cli.git
+ros config init
+```
+
+### Method 1: CLI command (recommended)
+
+Install the CLI first, then let the CLI place the correct skill template:
+
+```bash
+pip install --upgrade git+https://github.com/Shannon4Science/ros-cli.git
+ros skill install                      # Auto-detect platform
+ros skill install --platform cursor    # Cursor only
+ros skill install --platform codex     # Codex only
+ros skill install --platform openclaw  # OpenClaw only
+ros skill install --platform claude    # Claude Code only
+ros skill install --platform all       # All platforms
+```
+
+### Method 2: Quick Install template only
+
+This installs the skill file without pip-installing the CLI. You must still install the CLI before using the skill:
 
 ```bash
 # Linux / macOS
@@ -90,19 +113,14 @@ irm https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/scripts/quick
 curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/scripts/quick_install.py | python3 - --platform openclaw
 ```
 
-### Method 2: CLI command (recommended if CLI is installed)
+After template installation, install and configure the CLI:
 
 ```bash
-pip install git+https://github.com/Shannon4Science/ros-cli.git
-ros skill install                      # Auto-detect platform
-ros skill install --platform cursor    # Cursor only
-ros skill install --platform codex     # Codex only
-ros skill install --platform openclaw  # OpenClaw only
-ros skill install --platform claude    # Claude Code only
-ros skill install --platform all       # All platforms
+pip install --upgrade git+https://github.com/Shannon4Science/ros-cli.git
+ros config init
 ```
 
-### Method 3: Manual download
+### Method 3: Manual download template only
 
 Download individual templates directly:
 
@@ -125,6 +143,13 @@ curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/ros_api
 # Claude Code (save to project root)
 curl -sSL https://raw.githubusercontent.com/Shannon4Science/ros-cli/main/ros_api/skills/claude_agents.md \
   -o AGENTS.md
+```
+
+After manual template installation, install and configure the CLI:
+
+```bash
+pip install --upgrade git+https://github.com/Shannon4Science/ros-cli.git
+ros config init
 ```
 
 ### Supported platforms
